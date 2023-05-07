@@ -1,0 +1,106 @@
++++ Integrating Webpack into the Application +++
+
+npm init -y
+npm install webpack webpack-cli --save-dev
+
+npx wepback
+npx webpack --mode=production
+npx webpack --mode=development
+
+--> If no configuration --> webpack uses default configuration
+
++++ Default Webpack Configuration +++
+
+webpack.config.js
+---
+const path = require("path");
+const config = {
+  entry: "./src", // webpack knows that file is index.js
+  output: {
+    path: path.resolve(__dirname, "dist"),
+    filename: "main.js",
+  },
+  mode: "production",
+};
+module.exports = config;
+---
+
+--> npx webpack
+
++++ Separating Code into Multiple Files +++
+
+data.js
+ui.js
+event-handlers.js
+todos.json
+
++++ Different Configurations for Produciton and Development Builds +++
+
+src/js
+src/styles
+
+npm install webpack-merge --save-dev
+
+webpack.common.config.js
+webpack.dev.config.js
+webpack.prod.config.js
+
+npx webpack --config webpack/webpack.dev.config.js
+
+--> Check size of folder --> ls -lh dist
+
+---
+const path = require("path");
+const common = {
+  entry: path.resolve(__dirname, "..", "src", "js", "index.js"),
+  output: {
+    path: path.resolve(__dirname, "..", "dist"),
+    filename: "main.js",
+  },
+};
+module.exports = common;
+---
+
+---
+const { merge } = require("webpack-merge");
+const common = require("./webpack.common.config");
+const config = merge(common, {
+  mode: "development",
+});
+module.exports = config;
+---
+
++++ Setting up Wenpack-Dev-Server +++
+
+"dev": "npx webpack --config webpack/webpack.dev.config.js"
+"build": "npx webpack --config webpack/webpack.prod.config.js"
+
+npm install webpack-dev-server --save-dev
+
+---
+webpack.dev.config.js --> config
+
+devServer: {
+  port: 9000,
+  static: {
+    directory: path.resolve(__dirname, '..') // we move webpack configuration on to webpack folder, now we need to point back to the root source
+  },
+  devMiddleware: {
+    index: 'index.html',
+    writeToDisk: true // By default, Webpack dev server generates files in memory and doesn't save them to disk
+  },
+  client: {
+    overlay: true // Tells WDS to show a full screen overlay in the browser when there are compiler errors or warnings
+  },
+  liveReload: false // By defualt we use live reload but in this case we turn it off to use hot module reloading
+}
+
+--> Hot module reloading --> Allows us to get the latest changes in the browser without reloading the page
+---
+
+"dev": "npx webpack serve --config webpack/webpack.dev.config.js --hot"
+
+-------------
+
+--> Watch mode --> "watch": "npx webpack --watch --config webpack/webpack.dev.config.js"
++ Downside --> Have to refresh browser in order to see the changes
