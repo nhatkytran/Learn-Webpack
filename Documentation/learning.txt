@@ -1,0 +1,35 @@
++++ Getting Started +++
+
+npm init -y
+npm install webpack webpack-cli --save-dev
+
+- "main": "index.js"
++ "private": true
+
++++ bundle the lodash dependency with index.js
+npm install --save lodash
+
+index.html --> <script src="main.js"></script>
+
+npx webpack
+
+---
+
++ webpack.config.js
+
+npx webpack --config webpack.config.js
+
++ "build": "webpack"
+
+--------------------------------
+webpack-demo
+|- package.json
+|- package-lock.json
+|- webpack.config.js
+|- /dist
+  |- main.js
+  |- index.html
+|- /src
+  |- index.js
+|- /node_modules
+--------------------------------
