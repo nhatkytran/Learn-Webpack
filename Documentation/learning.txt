@@ -33,3 +33,9 @@ webpack-demo
   |- index.js
 |- /node_modules
 --------------------------------
+
++++ Asset Management +++
+
+npm install --save-dev style-loader css-loader
+--> use: ['style-loader', 'css-loader'] --> Reverse order
+--> minimize css
