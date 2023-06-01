@@ -1,0 +1,6 @@
++++ Introduction to Processing Images +++
+
+--> Using images inside HTML
+--> Referencing images inside CSS
+--> Importing images inside JavaScript code
+--> Compressing images for production builds

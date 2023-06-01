@@ -1,8 +1,9 @@
 import { getAllTodos, addTodo, removeTodo, updateTodo } from "./data";
-import { renderTodos } from "./ui";
+import { renderTodos, showNotification } from "./ui";
 
 export function clearNewTodoInput() {
   document.querySelector(".new-todo").value = "";
+  showNotification();
 }
 
 export function getTodoId(element) {

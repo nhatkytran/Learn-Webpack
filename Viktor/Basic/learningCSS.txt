@@ -1,0 +1,425 @@
++++ Regular CSS. Brief info about Loaders +++
+
+npm install style-loader css-loader --save-dev
+
+['stylde-loader', 'css-loader']
+Order: 'css-loader' --> 'style-loader'
++ 'css-loader': Loads and parses CSS files --> JS objects
++ 'style-loader': Add CSS styles into HTML document at runtime
+
+--> Webpack understands JS and Json --> Import directly
+--> Other kinds of files --> Loaders
+
+--> Loaders --> JS library that knows how to import a specific \
+file type into Webpack
+
+webpack.common.config.js
+
+module: {
+  rules: [
+    {
+      test: /\.css$/i,
+      use: ["style-loader", "css-loader"],
+    },
+  ],
+}
+
+*** Point to note
+--> Down side --> css is imported directly in <style></sytle> tag
+--> Not good for production
+
++++ Extracting Generated CSS into a Separate Bundle +++
+
+webpack.dev.config.js
+
+output: {
+  filename: 'bundle.js'
+},
+module: {
+  rules: [
+    {
+      test: /\.css$/i,
+      use: ["style-loader", "css-loader"],
+    },
+  ],
+}
+
+--> MiniCssExtractPlugin
+
+webpack.prod.config.js
+
+npm install --save-dev mini-css-extract-plugin
+
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+output: {
+  filename: '[name].[contenthash:12].js'
+},
+module: {
+  rules: [
+    {
+      test: /\.css$/i,
+      use: [MiniCssExtractPlugin.loader, "css-loader"],
+    },
+  ],
+},
+plugins: [
+  new MiniCssExtractPlugin({
+    filename: '[name].[contenthash:12].css'
+  })
+]
+
+[name].[contenthash:12].css
+name --> 'main' by default if do not specify name for entry point
+contenthash --> MD4 encryption --> make unique file name
++ 20 characters long by default --> :12 --> 12 characters long
+
++++ Generating HTML Based on Custom Template +++
+
+npm install --save-dev html-webpack-plugin
+npm install --save-dev html-loader
+
+webpack.common.config.js
+
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module: {
+  rules: [
+    {
+      test: /\.html$/i,
+      // loader: "html-loader",
+      use: [
+        { loader: 'html-loader' }
+      ]
+    },
+  ],
+},
+plugins: [new HtmlWebpackPlugin({
+  filename: 'index.html',
+  template: 'src/template.html'
+})]
+
+(
+  delete style tag and script tag in template
+  change reference in webpack.dev.config.js
+)
+
+--> By default, Webpack will create a simple HTML file \
+according to its internal template
+--> It is possible to provide a custom template
+
+--> html-webpack-plugin creates html file based on template
+--> html-loader loads references like img tag,...
+
+
+// Note
+image in html --> html-loader
+image in css --> css-loader
+link image in JavaScript --> ???
+
++++ Removing old Bundles before Generating new ones +++
+
+webpack.common.config.js
+
+output: {
+  clean: true
+}
+
+---
+
+output: {
+  clean: {
+    dry: true, // print name of files should be removed, but none of them be removed
+    keep: /\.css$/i, // tells Webpack which files should keep when cleaning the dist
+  }
+}
+
+*** Point to note:
+--> Put JS files and CSS files in their own folders
+webpack.prod.config.js
+---
+output: {
+  filename: 'js/[name].[contenthash:12].js'
+},
+plugins: [
+  new MiniCssExtractPlugin({
+    filename: 'css/[name].[contenthash:12].css'
+  })
+]
+---
+
++++ Another Way of Removing old Bundles +++
+
+--> Problem: Not remove files using Webpack Dev Server
+output.clean: true is now not working with Webpack Dev Server
+
+npm install clean-webpack-plugin --save-dev
+
+webpack.common.config.js
+---
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+// Comment out --> clean: true
+plugins: [
+  new CleanWebpackPlugin()
+]
+---
+
+Options in new CleanWebpackPlugin()
+{
+  cleanOnceBeforeBuildPatterns: [
+    '**/*',
+    path.join(process.cwd(), 'build/**/*')
+  ]
+}
+--> All patterns are relative to the Webpack output folder --> `dist` folder
+
+*** Point to note
+--> When using CleanWebpackPlugin, reloads from the second time \
+makes image disappear
+--> Perfer using output.clean: true
+--> Bug will be fixed in the future, now sometimes just remove files manually
+
++++ CSS Modules +++
+
+import styles from "notification.module.css";
+
+styles.className
+
+webpack.prod.config.js
+---
+module: {
+  rules: [
+    {
+      test: /\.css$/i,
+      exclude: /\.module\.css$/i,
+      use: [MiniCssExtractPlugin.loader, "css-loader"],
+    },
+    {
+      test: /\.css$/i,
+      include: /\.module\.css$/i,
+      use: [
+        MiniCssExtractPlugin.loader,
+        {
+          loader: "css-loader",
+          options: {
+            modules: true,
+          },
+        },
+      ],
+    },
+  ],
+}
+
+modules: {
+  localIdentName: "[hash:base64]",
+},
+
+
+webpack.prod.config.js
+---
+module: {
+  rules: [
+    {
+      test: /\.css$/i,
+      exclude: /\.module\.css$/i,
+      use: ['style-loader', "css-loader"],
+    },
+    {
+      test: /\.css$/i,
+      include: /\.module\.css$/i,
+      use: [
+        'style-loader',
+        {
+          loader: "css-loader",
+          options: {
+            modules: {
+              localIdentName: '[local]--[md4:hash:7]'
+            }
+          },
+        },
+      ],
+    },
+  ],
+}
+
++++ Optimizing CSS for Production +++
+
+npm install css-minimizer-webpack-plugin --save-dev
+
+webpack.prod.common.js
+---
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+...
+optimization: {
+  minimize: true,
+  minimizer: [
+    new CssMinimizerPlugin({
+      minimizerOptions: {
+        preset: ["default", { discardComments: { removeAll: true } }],
+      },
+    }),
+  ],
+}
+---
+existing minimizers for minimize JS code
+`...` --> tells Webpack to keep existing minimizers and only add new ones
+
++++ Using Less Preprocessor +++
+
+npm install less less-loader --save-dev
+
+index.less
+in JS file --> import 'index.less'
+
+webpack.prod.config.js
+---
+rules: [
+  {
+    test: /\.less$/i,
+    use: [MiniCssExtractPlugin.loader, 'css-loader', 'less-loader']
+  }
+]
+---
+
+webpack.dev.config.js
+---
+rules: [
+  {
+    test: /\.less$/i,
+    use: ['style-loader', 'css-loader', 'less-loader']
+  }
+]
+---
+
++++ Using Sass together with Webpack +++
+
+npm install sass sass-loader --save-dev
+
+index.scss --> @import 'variables';
+_variable.scss --> partial file
+in JS file --> import 'index.scss';
+
+webpack.prod.config.js
+---
+rules: [
+  {
+    test: /\.scss$/i,
+    use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
+  }
+]
+---
+
+webpack.dev.config.js
+---
+rules: [
+  {
+    test: /\.scss$/i,
+    use: ['style-loader', 'css-loader', 'sass-loader']
+  }
+]
+---
+
++++ Using PostCSS +++
+
+--> PostCSS --> Add browser prefixes
+
+npm install autoprefixer postcss-loader --save-dev
+
+--> create files same level as package.json
+postcss.config.js
+---
+module.exports = {
+  plugins: [
+    require('autoprefixer')
+  ]
+}
+---
+.browserslistrc
+---
+last 10 versions
+---
+
+webpack.prod.config.js
+---
+rules: [
+  {
+    test: /\.scss$/i,
+    use: [
+      MiniCssExtractPlugin.loader,
+      'css-loader',
+      'postcss-loader',
+      'sass-loader'
+    ]
+  }
+]
+---
+
++++ Removing Unused CSS from The Generated Bundles +++
+
+When using CSS Framework, there some CSS code in the framework \
+is unused
+--> PurgeCSS --> A tool to remove unused CSS code
+
+npm install bootstrap
+
+vendors.scss
+@import "~bootstrap/scss/bootstrap";
+
+index.js
+---
+import '../styles/vendors.scss';
+import '../styles/index.scss';
+---
+
+npm install purgecss-webpack-plugin --save-dev
+
+webpack.prod.config.js
+---
+const path = require('path');
+const glob = require('glob);
+const { PurgeCSSPlugin } = require('purgecss-webpack-plugin');
+
+plugins: [
+  new MiniCssExtractPlugin({
+    filename: "css/[name].[contenthash:12].css",
+  }),
+  new PurgeCSSPlugin({
+    paths: glob.sync(
+      `${path.join(__dirname, '../src')}/**/*`,
+      { nodir: true }
+    )
+  })
+],
+---
+
+notification.module.css
+---
+/* purgecss ignore */
+.notification {}
+---
+
+*** See the size of files
+ll <directory> --> ll src/js
+
++++ CSS-in-JS +++
+
+--> An abstract idea --> how to solve some of the issues \
+of the traditional CSS
+
+--> Benefits of CSS-in-JS
++ No class name collision
++ Business logic and styles for components can live together
++ Styles can depend on JS variables
+
+--> Drawbacks of CSS-in-JS
++ Bundle size
++ Can't cache JS and CSS separately
++ Performance
+
++++ Using JSS +++ (Watch video for implementation)
+https://www.udemy.com/course/webpack-optimizing-for-production/learn/lecture/33568484#questions
+
+--> JSS
++ been used in material UI
+
++++ Using Emotion (Another CSS-in-JS library) +++

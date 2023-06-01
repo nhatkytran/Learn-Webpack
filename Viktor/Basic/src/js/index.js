@@ -1,3 +1,5 @@
+import "../styles/main.scss";
+
 import {
   onLoadEventHandler,
   newTodoEventHandler,
@@ -7,7 +9,6 @@ import {
 
 window.addEventListener("load", onLoadEventHandler);
 document.addEventListener("change", function (event) {
-  console.log(123);
   if (event.target.classList.contains("new-todo")) {
     newTodoEventHandler(event);
   }
