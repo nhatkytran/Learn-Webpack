@@ -47,6 +47,16 @@ const config = merge(common, {
         test: /\.scss$/i,
         use: ["style-loader", "css-loader", "sass-loader"],
       },
+      {
+        test: /\.(png|jpg|svg)$/i,
+        type: "asset",
+        parser: {
+          dataUrlCondition: { maxSize: 10 * 1024 },
+        },
+        generator: {
+          filename: "./images/[name][ext]",
+        },
+      },
     ],
   },
 });
