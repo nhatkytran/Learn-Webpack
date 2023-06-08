@@ -13,6 +13,13 @@ const common = {
         test: /\.html$/i,
         use: [{ loader: "html-loader" }],
       },
+      {
+        test: /\.js$/i,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+        },
+      },
     ],
   },
   plugins: [

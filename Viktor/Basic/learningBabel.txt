@@ -1,0 +1,195 @@
++++ Setting up Babel Compiler +++
+
+npm install @babel/core @babel/preset-env babel-loader
+
+.babelrc
+---
+{
+  "presets": [
+    [ "@babel/preset-env" ]
+  ]
+}
+---
+
+.browserslistrc
+---
+> 0.25%
+---
+
+webpack.common.config.js
+---
+rules: [
+  ...,
+  {
+    test: /\.js$/i,
+    exclude: /node_modules/,
+    use: {
+      loader: 'babel-loader'
+    }
+  }
+]
+---
+
++++ Increasing Browser Support with Polyfills +++
+
+--> Polyfill features like Promises (only in ES6)
+
+npm install core-js --save-dev
+
+.bablerc
+---
+{
+  "presets": [
+    [
+      "@babel/preset-env", {
+        "useBuiltIns": "usage",
+        "corejs": {
+          "version": 3,
+          "proposals": true
+        },
+        "debug": true
+      }
+    ]
+  ]
+}
+---
+
+.browserslistrc
+---
+> 1%
+---
+
++++ Different Babel Configurations for Production and Development +++
+
+--> Adding Polyfills takes time, so only for Production
+
+.babelrc
+---
+{
+  "env": {
+    "production": {
+      "presets": [
+        [
+          "@babel/preset-env", {
+            "useBuiltIns": "usage",
+            "corejs": {
+              "version": 3,
+              "proposals": true
+            },
+            "debug": true
+          }
+        ]
+      ]
+    },
+    "development": {
+      "presets": [
+        [ "@babel/preset-env" ]
+      ]
+    }
+  }
+}
+---
+
+--> How Babel knows when we are in Production mode or when \
+we are in Development mode
+
+package.json
+---
+"dev": "NODE_ENV=development ..."
+"prod": "NODE_ENV=production ..."
+---
+
++++ Passing Environment Variables +++
+
+--> Passing Environment Variables on Linux and Mac
+NODE_ENV=production < command >
+
+--> Passing Environment Variables on Windows
+set NODE_ENV=production&& < command >
+
+Support both Linux | Mac & Window
+
+npm install cross-env --save-dev
+
+cross-env NODE_ENV=production < command >
+
++++ Using Experimental JavaScript Features +++
+
+const value = "      this     is    a    text      ";
+const newValue = value.replace(/^\s+/, "")
+                      .replace(/\s+$/, "")
+                      .replace(/\s{2,}/g, " ")
+
+text |> trim |> capitalize |> anotherFunction |> yetAnotherFunction
+
+npm install @babel/plugin-proposal-pipeline-operator
+
+.babelrc
+---
+{
+  "plugins": [
+    ["@babel/plugin-proposal-pipeline-operator"],
+    { "proposal": "minimal" }
+  ],
+  "env":...
+}
+---
+
++++ Setting up TypeScript +++
+
+js folder --> helpers.ts
+export function (in helpers.ts)
+
+event-handlers.js
+import { function } from './helpers';
+
+npm install @babel/preset-typescript typescript --save-dev
+
+In directory --> tsconfig.json
+---
+{
+  "compilerOptions": {
+    "module": "es2015",
+    "target": "es2015",
+    "noImplicitAny": true,
+    "noUnusedParameters": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+---
+
+webpack.common.config.js
+---
+const config = {
+  entry:...,
+  output:...,
+  resolve: {
+    extensions: ['.ts', '.js']
+  },
+  module: {
+    rules: [
+      ...,
+      {
+        test: /\.(js|ts)$/i,
+        ...
+      }
+    ]
+  },
+  plugins:...
+}
+---
+
+.babelrc
+---
+{
+  "presets": [
+    "@babel/preset-typescript"
+  ],
+  "plugins":...,
+  "env":...
+}
+---
+
+package.json
+"typecheck": "tsc --noEmit"

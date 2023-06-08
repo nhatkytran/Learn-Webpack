@@ -1,0 +1,24 @@
++++ Source Maps for JavaScript and CSS +++
+
+webpack.dev.config.js
+---
+{
+  output:...,
+  mode:...,
+  devtool: "eval-source-map"
+}
+---
+
+webpack.prod.config.js
+---
+{
+  output:...,
+  mode:...,
+  devtool: "source-map"
+}
+---
+
+"eval-souce-map" is better for development mode
+--> Only use "source-map" for development mode --> Security purpose
+
++++ Source Maps for CSS-in-JS Libraries +++
