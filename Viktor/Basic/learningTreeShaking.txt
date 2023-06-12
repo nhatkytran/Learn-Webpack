@@ -1,0 +1,7 @@
+Tree Shaking --> Code Elimination (external libraries)
+---
+optimization: {
+  usedExports: true
+}
+---
+--> Webpack applies Tree Shaking out of the box in production mode
